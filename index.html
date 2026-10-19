@@ -38,6 +38,13 @@ main{max-width:720px;margin:0 auto;padding:16px}
 .b-অ্যাডভান্সড{background:#7aa2ff22;color:#9db9ff;border:1px solid #7aa2ff55}
 .dd{font-size:13.5px;color:#9aa;margin-top:3px;line-height:1.5}
 .empty{text-align:center;color:#777;padding:30px 10px;font-size:14px}
+.score-card{max-width:720px;margin:16px auto 0;padding:22px 16px;background:linear-gradient(135deg,#14141f,#0e1626);border:1px solid #00e5ff33;border-radius:16px;text-align:center}
+.score-num{font-size:46px;font-weight:800;color:#00e5ff}
+.score-label{font-size:14px;color:#9aa;margin-top:2px}
+.score-msg{font-size:14px;color:#e8e8f0;margin-top:8px;min-height:20px}
+.score-break{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;font-size:12.5px;color:#9aa}
+.score-break span{background:#ffffff08;border:1px solid #ffffff14;border-radius:99px;padding:4px 12px}
+.share{margin-top:14px;background:linear-gradient(90deg,#00e5ff,#ff2bd6);border:none;color:#04121a;font-weight:700;border-radius:10px;padding:11px 26px;font-size:15px;cursor:pointer}
 footer{max-width:720px;margin:10px auto 0;padding:0 16px;text-align:center;font-size:12.5px;color:#777}
 footer a{color:#00e5ff}
 .reset{margin-top:14px;background:none;border:1px solid #ff2bd6;color:#ff2bd6;border-radius:10px;padding:10px 22px;font-size:14px;cursor:pointer}
@@ -58,6 +65,13 @@ footer a{color:#00e5ff}
 <input id="q" placeholder="🔍 খুঁজো… (যেমন: পাসওয়ার্ড, WiFi)">
 <nav id="nav"></nav>
 </header>
+<section class="score-card">
+<div class="score-num" id="scorenum">0%</div>
+<div class="score-label">সিকিউরিটি স্কোর</div>
+<div class="score-msg" id="scoremsg"></div>
+<div class="score-break" id="scorebreak"></div>
+<button class="share" id="sharebtn">📤 স্কোর শেয়ার করো</button>
+</section>
 <main id="main"></main>
 <footer>
 <div>মূল checklist: <a href="https://github.com/lissy93/personal-security-checklist">lissy93/personal-security-checklist</a> (CC BY 4.0) — বাংলায় রূপান্তরিত</div>
@@ -112,11 +126,37 @@ document.getElementById("filters").onclick=e=>{
   b.classList.add("on");filter=b.dataset.f;applyFilter();
 };
 document.getElementById("q").oninput=e=>{query=e.target.value.trim().toLowerCase();applyFilter();};
+function scoreMsg(p){
+  if(p===0)return "এখনো শুরু করোনি — 🔴 জরুরি দিয়ে শুরু করো!";
+  if(p<25)return "ভালো শুরু! চালিয়ে যাও 💪";
+  if(p<50)return "অর্ধেকের পথে আছো 🔒";
+  if(p<75)return "বেশ সুরক্ষিত! 🛡️";
+  if(p<100)return "প্রায় সম্পূর্ণ — দারুণ! 🌟";
+  return "🏆 সম্পূর্ণ সুরক্ষিত! বন্ধুদেরও শেয়ার করো";
+}
 function update(){
   const n=Object.keys(done).length;
-  document.getElementById("pfill").style.width=(total?Math.round(n/total*100):0)+"%";
+  const pct=total?Math.round(n/total*100):0;
+  document.getElementById("pfill").style.width=pct+"%";
   document.getElementById("ptxt").textContent=n+" / "+total+" সম্পন্ন";
+  document.getElementById("scorenum").textContent=pct+"%";
+  document.getElementById("scoremsg").textContent=scoreMsg(pct);
+  const prs=["জরুরি","ঐচ্ছিক","অ্যাডভান্সড"],icons={"জরুরি":"🔴","ঐচ্ছিক":"🟡","অ্যাডভান্সড":"🔵"};
+  let bh="";
+  prs.forEach(pr=>{
+    let t=0,d=0;
+    SECTIONS.forEach((s,si)=>s.items.forEach((it,ii)=>{if(it.pr===pr){t++;if(done["s"+si+"i"+ii])d++;}}));
+    bh+="<span>"+icons[pr]+" "+pr+": "+d+"/"+t+"</span>";
+  });
+  document.getElementById("scorebreak").innerHTML=bh;
 }
+document.getElementById("sharebtn").onclick=async ()=>{
+  const n=Object.keys(done).length,pct=total?Math.round(n/total*100):0;
+  const text="🔒 আমার সিকিউরিটি স্কোর: "+pct+"% ("+n+"/"+total+") — তুমিও চেক করো";
+  const url=location.href;
+  if(navigator.share){try{await navigator.share({title:"সিকিউরিটি চেকলিস্ট",text:text,url:url});}catch(e){}}
+  else{try{await navigator.clipboard.writeText(text+" "+url);alert("কপি হয়ে গেছে — পেস্ট করে শেয়ার করো!");}catch(e){prompt("কপি করো:",text+" "+url);}}
+};
 document.getElementById("reset").onclick=()=>{if(confirm("সব tick মুছে ফেলবে?")){done={};localStorage.removeItem(KEY);document.querySelectorAll(".item.done").forEach(e=>e.classList.remove("done"));update();}};
 applyFilter();update();
 </script>
