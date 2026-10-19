@@ -1,6 +1,6 @@
 # 🔒 বাংলা সিকিউরিটি চেকলিস্ট
 
-২৫৯টা digital security ও privacy tips — সম্পূর্ণ বাংলায়।
+৩০০+ digital security ও privacy tips — সম্পূর্ণ বাংলায়।
 
 🌐 **Live:** https://samiul14.de5.net/seccheck.html
 
